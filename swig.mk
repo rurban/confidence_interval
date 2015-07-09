@@ -11,17 +11,17 @@ SWIG=swig
 
 #### language-specific flags
 #### perl
-PERL_ARCH_LIB:=$(shell eval `perl -V:archlib`; echo $$archlib)
+PERL_ARCH_LIB:=$(shell eval `$(PERL) -V:archlib`; echo $$archlib)
 PERL_CORE_INCLUDE=$(PERL_ARCH_LIB)/CORE
 IFLAGS+=-I$(PERL_CORE_INCLUDE)
-IFLAGS+=$(shell eval `perl -V:ccflags`; echo $$ccflags)
-CFLAGS+=$(IFLAGS)
-LDFLAGS+=$(shell eval `perl -V:ldflags`; echo $$ldflags)
-LDFLAGS+=$(shell eval `perl -V:libs`; echo $$libs) -L$(PERL_CORE_INCLUDE) -lperl
-####
+CFLAGS+=$(IFLAGS) $(shell eval `$(PERL) -V:ccflags`; echo $$ccflags)
+LDFLAGS+=$(shell eval `$(PERL) -V:ldflags`; echo $$ldflags)
+LDFLAGS+=$(shell eval `$(PERL) -V:libs`; echo $$libs) -L$(PERL_CORE_INCLUDE) -lperl#
+DLEXT=$(shell eval `$(PERL) -V:dlext`; echo $$dlext)
+###
 
 #### platform-specific flangs
-CFLAGS+=-fPIC
+#CFLAGS+=-fPIC
 # this fixes the off64_t error in perl.h on ubuntu. these are ugly flags..
 #CFLAGS+=-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 
 #CFLAGS+=-D_REENTRANT -D_GNU_SOURCE -DDEBIAN 
@@ -33,11 +33,11 @@ CFLAGS:=$(subst -Wall,,$(CFLAGS))
 #### files
 OBJ=$(MODULE_NAME)_wrap.o $(MODULE_NAME).o
 GENERATED=$(MODULE_NAME).pm $(MODULE_NAME)_wrap.c
-LIB=$(MODULE_NAME).so
+LIB=$(MODULE_NAME).$(DLEXT)
 MODULE_H=$(MODULE_NAME).h
 
 #### rules
-.SUFFIXES:	.c .e .i .pm .o .so _wrap.c _wrap.o .pl .run
+.SUFFIXES:	.c .e .i .pm .o .$(DLEXT) _wrap.c _wrap.o .pl .run
 
 .i_wrap.c: $(MODULE_H)
 	$(SWIG) $(SWIGFLAGS) -perl5 $<
@@ -45,7 +45,7 @@ MODULE_H=$(MODULE_NAME).h
 .i.pm: $(MODULE_H)
 	$(SWIG) $(SWIGFLAGS) -perl5 $<
 
-_wrap.o.so:
+_wrap.o.$(DLEXT):
 	$(CC) -shared -o $@ $(OBJ) $(LDFLAGS)
 
 #### targets
@@ -54,7 +54,7 @@ swig-lib: $(LIB)
 
 swig-clean::
 	rm -f $(GENERATED)
-	rm -f *.o *.so
+	rm -f *.o *.$(DLEXT)
 
 swig-gen:
 	$(SWIG) $(SWIGFLAGS) -perl5 $(MODULE_NAME).i

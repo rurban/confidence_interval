@@ -1,9 +1,9 @@
-
 #
 # usage: make clean all test
 #
 
 all::
+PERL:=perl
 MODULE_NAME=confidence_interval
 EXE=$(MODULE_NAME)
 include swig.mk
@@ -15,10 +15,10 @@ clean: swig-clean
 	rm -f $(EXE)
 
 CFLAGS+=-Wall
-LDFLAGS+=-lm
+#LDFLAGS+=-lm
 
 $(EXE):
-	$(CC) -DBUILD_COMMAND  $(MODULE_NAME).c  -lm  -o $(EXE)
+	$(CC) -DBUILD_COMMAND  $(MODULE_NAME).c -lm -o $(EXE)
 
 test: test-cmd test-pl
 
@@ -33,7 +33,7 @@ tt:
 	@echo $(IFLAGS)
 
 test-pl:
-	./test.pl
+	$(PERL) -I. test.pl
 
 e:
 	$(CC) -I$(PERL_CORE_INCLUDE) -Wall -E -o $(MODULE_NAME)_wrap.E $(MODULE_NAME)_wrap.c
