@@ -7,6 +7,8 @@ all::
 MODULE_NAME=confidence_interval
 EXE=$(MODULE_NAME)
 include swig.mk
+CC:=$(shell eval `perl -V:cc`; echo $$cc)
+
 all:: swig-all $(EXE)
 
 clean: swig-clean
@@ -16,7 +18,7 @@ CFLAGS+=-Wall
 LDFLAGS+=-lm
 
 $(EXE):
-	cc -DBUILD_COMMAND  $(MODULE_NAME).c  -lm  -o $(EXE) 
+	$(CC) -DBUILD_COMMAND  $(MODULE_NAME).c  -lm  -o $(EXE)
 
 test: test-cmd test-pl
 
@@ -34,5 +36,5 @@ test-pl:
 	./test.pl
 
 e:
-	cc  -I/usr/lib/perl/5.10/CORE -Wall   -E -o $(MODULE_NAME)_wrap.E $(MODULE_NAME)_wrap.c
+	$(CC) -I$(PERL_CORE_INCLUDE) -Wall -E -o $(MODULE_NAME)_wrap.E $(MODULE_NAME)_wrap.c
 

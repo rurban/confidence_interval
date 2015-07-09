@@ -7,26 +7,28 @@ endif
 
 # freebsd: cd /usr/ports/devel/swig; sudo make install
 # ubuntu: sudo apt-get install swig
-SWIG=/usr/bin/swig
+SWIG=swig
 
 #### language-specific flags
 #### perl
 PERL_ARCH_LIB:=$(shell eval `perl -V:archlib`; echo $$archlib)
 PERL_CORE_INCLUDE=$(PERL_ARCH_LIB)/CORE
 IFLAGS+=-I$(PERL_CORE_INCLUDE)
+IFLAGS+=$(shell eval `perl -V:ccflags`; echo $$ccflags)
 CFLAGS+=$(IFLAGS)
+LDFLAGS+=$(shell eval `perl -V:ldflags`; echo $$ldflags)
+LDFLAGS+=$(shell eval `perl -V:libs`; echo $$libs) -L$(PERL_CORE_INCLUDE) -lperl
 ####
 
 #### platform-specific flangs
 CFLAGS+=-fPIC
 # this fixes the off64_t error in perl.h on ubuntu. these are ugly flags..
 #CFLAGS+=-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 
-CFLAGS+=-D_REENTRANT -D_GNU_SOURCE -DDEBIAN 
+#CFLAGS+=-D_REENTRANT -D_GNU_SOURCE -DDEBIAN 
 
 #### generic flags
 CFLAGS:=$(subst -Wall,,$(CFLAGS))
 #SWIGFLAGS+=$(IFLAGS)
-# LDFLAGS+=-lm
 
 #### files
 OBJ=$(MODULE_NAME)_wrap.o $(MODULE_NAME).o
